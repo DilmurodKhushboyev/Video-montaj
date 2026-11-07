@@ -1,0 +1,6 @@
+# qayta yaratiladigan fayllar (bash projects/<nom>_assets.sh)
+previews/
+models/
+assets/images/
+__pycache__/
+*.pyc

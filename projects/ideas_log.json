@@ -1,0 +1,30 @@
+{
+ "videos": [
+  {
+   "project": "qutul_qulub",
+   "date": "2026-11-07",
+   "theme": "Qutul qulub (Qalblar ozuqasi) kitobi qayta nashri, Imom G'azzoliy hikoyasi",
+   "signatures": [
+    "reel swipe qilinmay qaytadi",
+    "EKG so'nadi -> yurak qaytadi",
+    "chala yurak konturi -> muqova yuragi to'ldiradi",
+    "AF-ramka tomoshabinni tanlaydi",
+    "bosmaxona skaneri",
+    "1000 kun-tun time-lapse",
+    "o'tmish arvohi bugungi kadrda (double exposure)"
+   ],
+   "techniques": [
+    "qorong'ida yolg'iz obyekt (cutout)", "lenta + xira fon (band)", "karta / polaroid",
+    "triptix (3 lenta)", "vertikal stek (pastdan yuqoriga ko'tarilish)", "panorama g'arb->sharq",
+    "UI-swipe (reel o'tib ketay deydi)", "pull-out", "push-in", "yorug'lik to'kilishi (radial reveal)",
+    "skaner chizig'i rangni o'zgartiradi", "time-lapse kun/tun miltillashi", "botqoq yashil",
+    "pufakchalar (suv osti)", "gul barglari", "fonar alangasi miltillashi",
+    "drop_chars (harflar yiqiladi)", "scatter_in (uzoqdan uchib kelish)", "stamp (shtamp)",
+    "zinapoya matn", "marshrut yoyi + yorliqlar", "counter", "typewriter", "glitch_text", "shine",
+    "burn", "luma", "blinds", "dissolve", "cut", "fade", "heart", "iris", "whip", "push", "flare", "zoom"
+   ],
+   "music": "The Stranglers — Golden Brown: intro 0–20 s + instrumental 110.76 s dan (chok o'xshashligi 0.98), inqirozda lowpass",
+   "color_story": "qizil-qorong'i hook -> oltin o'tmish -> sovuq ko'k inqiroz -> oltin nur -> bugungi kun -> gulli yakun"
+  }
+ ]
+}
