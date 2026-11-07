@@ -1,8 +1,9 @@
 """
 Qutul qulub — "Qalblar ozuqasi" kitobi qayta nashri uchun reels (1080x1920, 30 fps).
 
-Ovoz: azvuchka (qutul.m4a) + The Stranglers — Golden Brown (fon), tools/mix_audio.py bilan
-miks qilingan: output/qutul_qulub_audio.m4a (render.py uni o'zgartirmasdan ko'chiradi).
+Ovoz: azvuchka (qutul.m4a) + kitob promo-videosidagi musiqa (assets/audio/musiqa2.m4a, 0 s dan,
+uning 20 s dagi bo'lim almashuvi hikoyadagi burilish bilan bir joyga tushadi), tools/mix_audio.py
+bilan miks qilingan: output/qutul_qulub_audio.m4a (render.py uni o'zgartirmasdan ko'chiradi).
 
 Asosiy motiv — muqovadagi YURAK: hookda u qorong'ida uradi, tushkunlikda EKG so'nadi va
 yurak konturi chala qoladi ("nimadir yetishmasdi"), kitob topilganda o'sha bo'shliqni
@@ -20,7 +21,7 @@ R.configure(size=(1080, 1920), fps=30, dur=58.5)
 from render import *  # noqa: F401,F403,E402
 
 OUTPUT = "output/qutul_qulub.mp4"
-POST = {"grain": 0.07, "fade_in": 0.12, "fade_out": 0.8}
+POST = {"grain": 0.07, "fade_in": 0.0, "fade_out": 0.8}
 
 TX0, TX1, TC = 90, 920, 505          # safe text column (right side kept free for Reels UI)
 
@@ -232,95 +233,163 @@ def shake(t, hits, amp=18, dur=0.35):
 
 
 # ==========================================================================
-# 0. HOOK — a heart beating in the dark; the video refuses to be skipped
+# 0. SUPER HOOK
+#    0.00-1.20  cold open: the whole story flashes past on the music hits, a giant "15"
+#               hangs over it; on the 1.20 hit it collapses into the headline "15 soniyada"
+#    1.20-7.6   the heart beats in the dark inside a 15-second countdown ring
+#               (the ring then flies to the corner and keeps counting through scenes 1-2)
 # ==========================================================================
-HOOK_BEATS = [(0.10, 1.0), (0.38, 0.5), (1.33, 0.5), (2.26, 0.5), (3.22, 0.4), (4.19, 0.5),
-              (5.47, 0.5), (6.42, 0.5), (1.27, 0.9), (4.84, 1.5), (6.25, 0.6), (7.05, 0.9)]
+HITS = [0.16, 0.63, 1.20, 2.66, 3.12, 5.16, 5.63, 6.09]            # music downbeats
+HOOK_BEATS = [(h, 0.7) for h in HITS] + [(1.24, 1.2), (4.84, 1.5), (6.25, 0.6), (7.05, 0.9)]
+FLASH = [(0.00, "macro", 1290, 940, 1.45), (0.16, "k1_10c", 900, 560, 1.30),
+         (0.41, "k3_00", 1098, 330, 1.35), (0.63, "k3_21", 1300, 485, 1.25),
+         (0.85, "k3_31", 1300, 420, 1.25)]
+T_MAIN = 1.20
 
 
-def _hook_layer(ctx, t):
+def _flash_shot(ctx, t):
+    k = max(i for i, f in enumerate(FLASH) if f[0] <= t)
+    t0, name, fx, fy, z = FLASH[k]
+    t1 = FLASH[k + 1][0] if k + 1 < len(FLASH) else T_MAIN
+    q = prog(t, t0, t1 - t0)
+    punch = 1 + 0.10 * (1 - e_out(prog(t, t0, 0.14)))
+    cover(ctx, P[name], fx, fy, z * (1 + 0.06 * q) * punch)
+    vignette(ctx, 0.75)
+    tint(ctx, CRIMSON, 0.18, cairo.OPERATOR_SOFT_LIGHT)
+    flash(ctx, 0.55 * (1 - prog(t, t0, 0.09)) if t0 > 0 else 0, CREAM)
+
+
+def _hook_heart(ctx, t):
     bg_grad(ctx, hx("#0d0507"), hx("#040203"), hx("#14070b"))
     pb = pulse(t, HOOK_BEATS, 0.15)
-    drift = 0.5 + 0.5 * math.sin(t * 0.7)
-    hxp = 540 + 10 * math.sin(t * 0.6)
-    hyp = lerp(1150, 1105, e_io(prog(t, 3.9, 3.2))) + 6 * drift
-    s = lerp(0.50, 0.55, e_io(prog(t, 3.9, 3.2))) * (1 + 0.04 * pb)
-    glow(ctx, hxp, hyp - 40, 700, CRIMSON, 0.26 + 0.16 * pb)
-    god_rays(ctx, t, hxp, hyp - 60, 0.05 + 0.05 * pb, EMBER, n=11, seed=7, ang0=0, ang1=6.28,
+    hxp = 540 + 8 * math.sin(t * 0.6)
+    hyp = lerp(1110, 1150, e_io(prog(t, 3.9, 1.0))) + 5 * math.sin(t * 0.7)
+    s = lerp(0.56, 0.48, e_io(prog(t, 3.9, 1.0))) * (1 + 0.045 * pb)
+    s *= 1 + 0.25 * (1 - e_out5(prog(t, T_MAIN, 0.45)))          # lands on the 1.20 hit
+    glow(ctx, hxp, hyp - 40, 700, CRIMSON, 0.26 + 0.18 * pb)
+    god_rays(ctx, t, hxp, hyp - 60, 0.05 + 0.06 * pb, EMBER, n=11, seed=7, ang0=0, ang1=6.28,
              length=1300)
     heart_pic(ctx, hxp, hyp, s)
-    add_glow(ctx, hxp, hyp, 260, hx("#ff5a3c"), 0.07 + 0.22 * pb)
+    add_glow(ctx, hxp, hyp, 260, hx("#ff5a3c"), 0.07 + 0.24 * pb)
     shockwave(ctx, hxp, hyp, prog(t, 4.84, 1.2), color=hx("#ffb39c"), rmax=760, width=4)
-    shockwave(ctx, hxp, hyp, prog(t, 1.27, 0.9), color=hx("#ffb39c"), rmax=520, width=2)
+    shockwave(ctx, hxp, hyp, prog(t, T_MAIN, 0.9), color=hx("#ffb39c"), rmax=620, width=3)
     sparks(ctx, hxp, hyp - 40, prog(t, 4.86, 0.8), seed=4, n=30, color=hx("#ffd2a6"), reach=520)
+    sparks(ctx, hxp, hyp - 40, prog(t, T_MAIN + 0.02, 0.7), seed=9, n=24, color=hx("#ffd2a6"),
+           reach=460)
     dust(ctx, t, hx("#ffcfa0"), seed=3, n=55, a=0.42, size=0.9, add=True)
-    # end of the hook: the heart turns into a sun (burn transition picks it up)
-    add_glow(ctx, hxp, hyp - 80, 900, EMBER, 0.55 * e_in(prog(t, 6.75, 0.9)))
-    vgrad(ctx, 160, 820, 0.35, 0)
-
-    # --- phase A: "Agar keyingi 15 soniyada"
-    aA = fade_out(t, 2.05, 0.25)
-    if aA > 0:
-        words_in(ctx, t, ws("A", 0, 2), "light", 54, WHITE, TX0, 360, wt("A", 0), align="l",
-                 stagger=0.14, blur_in=8, alpha=aA, tracking=2)
-        w15 = tw("15", "black", 300)
-        slam(ctx, "15", "black", 300, WHITE, TX0 - 6, 690, t, wt("A", 2), grad=GG, alpha=aA,
-             glow=22, glow_a=0.45, glow_color=EMBER, s0=1.9)
-        words_in(ctx, t, ws("A", 3), "serif_it", 96, CREAM, TX0 + w15 + 34, 640, wt("A", 3) + 0.05,
-                 align="l", blur_in=10, alpha=aA, dur=0.6)
-    # --- phase B: "bu videoni o‘tkazib yubormasangiz,"
-    aB = appear(t, wt("A", 4) - 0.05, 0.25) * fade_out(t, 3.95, 0.22)
-    if aB > 0:
-        text(ctx, ws("A", 4, 6), "med", 58, WHITE, TX0, 400, alpha=aB, tracking=1)
-        sz = fit(ws("A", 6, 8), "xbold", 82, TX1 - TX0)
-        text_rise(ctx, ws("A", 6, 8), "xbold", sz, WHITE, TX0, 505, prog(t, wt("A", 6) - 0.05, 0.4),
-                  grad=GG, shadow=12)
-    # --- phase C: "hayotingizdagi ENG TO‘G‘RI qarorlardan birini ... qabul qilgan bo‘lasiz."
-    aC = appear(t, wt("A", 8) - 0.05, 0.3)
-    if aC > 0:
-        words_in(ctx, t, ws("A", 8), "light", 54, WHITE, TX0, 320, wt("A", 8) - 0.05, align="l",
-                 tracking=3, blur_in=8)
-        sz = fit(ws("A", 9, 11), "black", 150, TX1 - TX0)
-        slam(ctx, ws("A", 9, 11), "black", sz, WHITE, TX0 - 4, 480, t, wt("A", 9) - 0.04,
-             grad=GG, glow=18, glow_a=0.4, glow_color=EMBER, s0=1.5)
-        words_in(ctx, t, ws("A", 11, 13), "serif_it", 70, CREAM, TX0, 575, wt("A", 11) - 0.05,
-                 align="l", stagger=0.22, blur_in=8)
-        words_in(ctx, t, ws("A", 13, 16), "serif_it", 64, CREAM, TC, 1465, wt("A", 13) - 0.05,
-                 align="c", stagger=0.2, blur_in=8)
+    add_glow(ctx, hxp, hyp - 80, 900, EMBER, 0.55 * e_in(prog(t, 6.85, 0.9)))
+    flash(ctx, 0.6 * (1 - prog(t, T_MAIN, 0.12)), CREAM)
 
 
 def scene_hook(ctx, lt, t):
-    # anti-skip: on "o‘tkazib" the whole reel starts to swipe away... then snaps back
-    t0, t1 = wt("A", 6) - 0.02, wt("A", 7) + 0.02
-    if t < t0:
-        dy, vy = 0.0, 0.0
-    elif t < t1:
-        q = prog(t, t0, t1 - t0)
-        dy, vy = -470 * e_in(q) ** 1.1, 0.0
+    if t < T_MAIN:
+        _flash_shot(ctx, t)
     else:
-        q = prog(t, t1, 0.8)
-        dy = -470 * (1 - e_elastic(q)) if q > 1e-3 else -470
-        vy = 0.0
-    if dy == 0:
-        _hook_layer(ctx, t)
+        _hook_heart(ctx, t)
+    vgrad(ctx, 140, 860, 0.55, 0)
+    w15 = tw("15", "black", 300)
+    # giant outlined "15" over the cold open, collapsing into the headline on the hit
+    m = e_io(prog(t, T_MAIN - 0.04, 0.26))
+    if m < 1:
+        pb = pulse(t, [(h, 1.0) for h in HITS[:3]], 0.12)
+        sp = sprite("15", "black", 860, GOLD_L, 0.0, None, 0, 7)
+        k = 300 / 860
+        x = lerp(540, TX0 - 6 + w15 / 2, m)
+        y = lerp(1420, 690 + sp.asc * 0.35 * (1 - k), m)
+        draw_sprite(ctx, sp, x, y, (0.85 + 0.15 * pb) * (1 - m), lerp(1.0 + 0.03 * pb, k, m),
+                    align="c")
+    # --- A: "Agar keyingi 15 soniyada" (readable from frame 0)
+    xA = fade_out(t, 1.96, 0.14)
+    if xA > 0:
+        up = 40 * (1 - xA)
+        text(ctx, ws("A", 0, 2), "semi", 58, WHITE, TX0, 360 - up, alpha=xA * appear(t, -0.1, 0.2),
+             tracking=2, shadow=16)
+        if t >= T_MAIN - 0.04:
+            slam(ctx, "15", "black", 300, WHITE, TX0 - 6, 690 - up, t, T_MAIN - 0.04, grad=GG,
+                 alpha=xA, glow=22, glow_a=0.5, glow_color=EMBER, s0=1.35)
+            words_in(ctx, t, ws("A", 3), "serif_it", 96, CREAM, TX0 + w15 + 34, 640 - up,
+                     wt("A", 3) - 0.08, align="l", blur_in=10, alpha=xA, dur=0.5)
+    # --- B: "bu videoni o‘tkazib yubormasangiz,"
+    if 2.06 <= t:
+        xB = fade_out(t, 3.84, 0.12)
+        if xB > 0:
+            up = 40 * (1 - xB)
+            words_in(ctx, t, ws("A", 4, 6), "med", 60, WHITE, TX0, 400 - up, 2.06, align="l",
+                     stagger=0.1, dur=0.3, alpha=xB, tracking=1, shadow=12)
+            sz = fit(ws("A", 6, 8), "xbold", 86, TX1 - TX0)
+            if xB < 1:
+                text(ctx, ws("A", 6, 8), "xbold", sz, WHITE, TX0, 510 - up, alpha=xB, grad=GG,
+                     shadow=12)
+            else:
+                text_rise(ctx, ws("A", 6, 8), "xbold", sz, WHITE, TX0, 510,
+                          prog(t, wt("A", 6) - 0.05, 0.35), grad=GG, shadow=12)
+    # --- C: "hayotingizdagi ENG TO‘G‘RI qarorlardan birini qabul qilgan bo‘lasiz."
+    if t >= 3.97:
+        words_in(ctx, t, ws("A", 8), "light", 56, WHITE, TX0, 320, 3.97, align="l", tracking=3,
+                 dur=0.35, shadow=10)
+        sz = fit(ws("A", 9, 11), "black", 150, TX1 - TX0)
+        slam(ctx, ws("A", 9, 11), "black", sz, WHITE, TX0 - 4, 480, t, wt("A", 9) - 0.04,
+             grad=GG, glow=18, glow_a=0.4, glow_color=EMBER, s0=1.5, shadow=14)
+        words_in(ctx, t, ws("A", 11, 13), "serif_it", 70, CREAM, TX0, 575, wt("A", 11) - 0.05,
+                 align="l", stagger=0.22, blur_in=8)
+        words_in(ctx, t, ws("A", 13, 16), "serif_it_b", 64, CREAM, TX0, 660, wt("A", 13) - 0.05,
+                 align="l", stagger=0.2, blur_in=8, shadow=10)
+
+
+# --- the 15-second promise: a countdown ring that outlives the hook --------------------------
+T15 = 1.24                     # "15" is spoken here
+
+
+def OVERLAY(ctx, t):
+    el = t - T15
+    if el < 0 or el > 15.9:
         return
-    # what peeks from below: the next "reel" — a cold, blurred glimpse of the crisis
-    bg_grad(ctx, INK, INK)
-    s, tx, ty = cam_cover(P["k1_10blur"], 1000 * 0.25, 600 * 0.25)
-    paint_pic(ctx, P["k1_10blur"], s, tx, ty + H + dy, 0.85)
-    surf = layer(_hook_layer, t)
-    sc = 1 - 0.035 * min(1.0, -dy / 470)
+    rem = max(0.0, 15.0 - el)
+    m = e_io(prog(t, 6.85, 0.6))                      # big ring around the heart -> corner badge
+    cx, cy, r = lerp(540, 900, m), lerp(1105, 288, m), lerp(330, 40, m)
+    a = appear(t, T15, 0.35) * (1 - prog(t, T15 + 15.35, 0.5))
+    if a <= 0:
+        return
     ctx.save()
-    ctx.translate(W / 2, dy + H / 2)
-    ctx.scale(sc, sc)
-    ctx.translate(-W / 2, -H / 2)
-    ctx.set_source_rgba(0, 0, 0, 0.5)
-    round_rect(ctx, 6, 18, W - 12, H, 34)
-    ctx.fill()
-    round_rect(ctx, 0, 0, W, H, 34 * (1 - sc) / 0.035)
-    ctx.clip()
-    ctx.set_source_surface(surf, 0, 0)
-    ctx.paint()
+    if m > 0:
+        ctx.set_source_rgba(0.03, 0.02, 0.02, 0.5 * m * a)
+        ctx.arc(cx, cy, r + 10, 0, 2 * math.pi)
+        ctx.fill()
+    ctx.set_line_cap(cairo.LINE_CAP_ROUND)
+    ctx.set_line_width(2.0)
+    ctx.set_source_rgba(*GOLD[:3], 0.35 * a)
+    ctx.arc(cx, cy, r, 0, 2 * math.pi)
+    ctx.stroke()
+    if m < 1:
+        for k in range(15):
+            an = -math.pi / 2 + k * 2 * math.pi / 15
+            ctx.set_line_width(3)
+            ctx.set_source_rgba(*GOLD_L[:3], 0.55 * a * (1 - m))
+            ctx.move_to(cx + (r - 14) * math.cos(an), cy + (r - 14) * math.sin(an))
+            ctx.line_to(cx + (r - 2) * math.cos(an), cy + (r - 2) * math.sin(an))
+            ctx.stroke()
+    frac = rem / 15.0
+    if frac > 0.002:
+        ctx.set_line_width(lerp(6, 5, m))
+        ctx.set_source_rgba(*GOLD_L[:3], 0.95 * a)
+        ctx.arc(cx, cy, r, -math.pi / 2, -math.pi / 2 + 2 * math.pi * frac)
+        ctx.stroke()
+        an = -math.pi / 2 + 2 * math.pi * frac
+        add_glow(ctx, cx + r * math.cos(an), cy + r * math.sin(an), lerp(60, 26, m), GOLD_L, 0.8 * a)
+    if m > 0:
+        if rem > 0:
+            text(ctx, str(int(math.ceil(rem))), "semi", 34, WHITE, cx, cy + 12, alpha=a * m,
+                 align="c")
+        else:                                       # made it: the ring closes with a tick
+            q = prog(t, T15 + 15.0, 0.4)
+            ctx.set_line_width(5)
+            ctx.set_source_rgba(*GOLD_L[:3], a)
+            ctx.move_to(cx - 15, cy + 1)
+            ctx.line_to(cx - 15 + 11 * min(1, q * 2), cy + 1 + 11 * min(1, q * 2))
+            if q > 0.5:
+                ctx.line_to(cx - 4 + 20 * (q - 0.5) * 2, cy + 12 - 24 * (q - 0.5) * 2)
+            ctx.stroke()
+            shockwave(ctx, cx, cy, prog(t, T15 + 15.0, 0.7), color=GOLD_L, rmax=160, width=2)
     ctx.restore()
 
 
@@ -1138,7 +1207,7 @@ def scene_finale(ctx, lt, t):
     ctx.stroke()
     hx_, hy_ = ctx.user_to_device(tx + hxi * sc, ty + hyi * sc)
     ctx.restore()
-    pb = pulse(t, [(wt("P", 5), 1.0), (55.7, 1.4), (56.6, 0.6), (57.45, 0.5)], 0.17)
+    pb = pulse(t, [(wt("P", 5), 1.0), (55.16, 0.7), (55.7, 1.4), (57.66, 1.0)], 0.17)
     add_glow(ctx, hx_, hy_, 260, hx("#ff5a4a"), 0.10 + 0.32 * pb)
     shockwave(ctx, hx_, hy_, prog(t, 55.7, 1.2), color=ROSE_L, rmax=800, width=3)
     _petals(ctx, t, hx_, hy_ - 30, 0.95)
@@ -1153,7 +1222,7 @@ def scene_finale(ctx, lt, t):
     handle(ctx, t, 56.0, y=1470)
 
 
-SCENES = [(0.0, scene_hook), (7.50, scene_millennium), (11.40, scene_west_east),
+SCENES = [(0.0, scene_hook), (7.62, scene_millennium), (11.40, scene_west_east),
           (16.27, scene_converge), (20.34, scene_summit), (24.62, scene_fall),
           (26.30, scene_void), (31.30, scene_found), (34.40, scene_lifted),
           (38.60, scene_reveal), (43.80, scene_hunt), (46.15, scene_chosen),

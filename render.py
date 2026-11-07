@@ -17,6 +17,7 @@ Loyiha fayli shartnomasi (projects/<nom>.py):
     TRANS = {1: ("burn", 0.9), 2: ("iris", 0.7, {"x": 540, "y": 600}), ...}
     OUTPUT = "output/<nom>.mp4"
     POST = {"grain": 0.10, "fade_in": 0.5, "fade_out": 0.7}   # ixtiyoriy
+    def OVERLAY(ctx, t): ...        # sahnalar ustidan (kesimlardan o'tib) yashaydigan qatlam
   Sahna funksiyasi: fn(ctx, lt, t) — lt: sahna ichidagi vaqt, t: umumiy vaqt.
 
 Ishlatish:
@@ -1671,6 +1672,9 @@ def render_frame(t):
                 break
     if not done:
         PROJECT.SCENES[idx][1](ctx, t - bounds[idx], t)
+    overlay = getattr(PROJECT, "OVERLAY", None)
+    if overlay:  # elements that live across scene cuts (timers, logos, progress)
+        overlay(ctx, t)
     post = getattr(PROJECT, "POST", {})
     ga = post.get("grain", 0.10)
     if ga > 0:
