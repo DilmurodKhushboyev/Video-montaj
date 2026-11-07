@@ -16,6 +16,6 @@ python3 tools/split_and_upscale.py assets/src/kollaj3.png models assets/images \
   --crop 880,318,1150,600 --scale 8 --prefix heart_macro
 # ovoz + musiqa miksi
 # musiqa: kitob promo-videosidan (2_5310219967600304179.mp4) ajratib olingan
-python3 tools/mix_audio.py --voice assets/audio/qutul_ovoz.m4a --music assets/audio/musiqa2.m4a \
+python3 tools/mix_audio.py --voice assets/audio/qutul_ovoz_v2.wav --music assets/audio/musiqa2.m4a \
   --dur 58.5 --edit "0:" --music-open -17 --music-duck -25.5 --music-fade 1.3 \
   --out output/qutul_qulub_audio.m4a

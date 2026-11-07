@@ -1,7 +1,7 @@
 """
 Qutul qulub — "Qalblar ozuqasi" kitobi qayta nashri uchun reels (1080x1920, 30 fps).
 
-Ovoz: azvuchka (qutul.m4a) + kitob promo-videosidagi musiqa (assets/audio/musiqa2.m4a, 0 s dan,
+Ovoz: azvuchka (qutul-enhanced-v2.wav, tozalangan) + kitob promo-videosidagi musiqa (assets/audio/musiqa2.m4a, 0 s dan,
 uning 20 s dagi bo'lim almashuvi hikoyadagi burilish bilan bir joyga tushadi), tools/mix_audio.py
 bilan miks qilingan: output/qutul_qulub_audio.m4a (render.py uni o'zgartirmasdan ko'chiradi).
 
