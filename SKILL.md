@@ -21,7 +21,9 @@ SIFAT darajasini ko'rsatadi — undan sahna ko'chirish taqiqlanadi.
 - Matn **harfma-harf** ko'chiriladi: o‘ g‘ (U+2018), ’ (U+2019), uzun tire —, katta-kichik
   harflar ham asl matndagidek. Yangi matn to'qilmaydi. Foydalanuvchi matnidagi iborani
   yakunda takrorlash (callback) mumkin — buni javobda ochiq ayting.
-- Video oxirida muallif yozuvi: **@Dilmurod_Khushboyev** (`render.HANDLE`, `handle()`).
+- Video oxirida muallif yozuvi: **Instagram belgisi + Dilmurod_Sabriy** (`render.HANDLE`,
+  `handle()` — Instagram belgisi va nom birga chiziladi). Reels xavfsiz zonasida joylang:
+  pastki izoh (y > 1480) va o'ngdagi tugmalar ostiga tushmasin.
 - Foydalanuvchi bilan o'zbek tilida, qisqa va aniq. Uzoq ish paytida vaqti-vaqti bilan
   1 qatorli holat xabari bering.
 
@@ -198,7 +200,7 @@ SIFAT darajasini ko'rsatadi — undan sahna ko'chirish taqiqlanadi.
    - [ ] audio md5 asl bilan teng: `ffmpeg -i X -map 0:a -c copy -f md5 -`;
    - [ ] har sahnada metafora + doimiy harakat; rasmlar "ostiga matn" uslubida emas;
    - [ ] 2-qadamdagi anti-shablon tekshiruvi bajarilgan;
-   - [ ] oxirida `@Dilmurod_Khushboyev`.
+   - [ ] oxirida Instagram belgisi + `Dilmurod_Sabriy` (xavfsiz zonada).
 4. Videoni yuboring (SendUserFile). `output/` ga commit va push qiling.
 5. `projects/ideas_log.json` ga shu videoning signature lahzalari va texnikalarini qo'shing.
 6. Javobda o'zbek tilida qisqa jadval: sahna → vaqt → g'oya. Taxminiy qismlarni ochiq ayting

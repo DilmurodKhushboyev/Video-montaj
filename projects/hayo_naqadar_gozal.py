@@ -1329,7 +1329,7 @@ def scene13(ctx, lt, t):
              scale=1.06 - 0.06 * e)
     chars_in(ctx, t, "naqadar goʻzal", "serif_it", 78, CREAM, 540, 716, OUT_T + 0.75,
              stagger=0.035, dur=0.6, blur=8, shadow=12)
-    handle(ctx, t, OUT_T + 1.15, y=868)
+    handle(ctx, t, OUT_T + 0.6, y=880, size=44)
     dust(ctx, t, hx("#fff1d8"), seed=48, n=40, a=0.45, speed=0.5, add=True)
     vignette(ctx, 0.3)
 

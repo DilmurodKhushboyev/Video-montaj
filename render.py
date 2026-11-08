@@ -42,7 +42,7 @@ DUR = 10.0
 HERE = os.path.dirname(os.path.abspath(__file__))
 FDIR = os.path.join(HERE, "assets", "fonts")
 IDIR = os.path.join(HERE, "assets", "images")
-HANDLE = "@Dilmurod_Khushboyev"
+HANDLE = "Dilmurod_Sabriy"  # Instagram; handle() draws the Instagram icon before it
 PROJECT = None
 
 
@@ -957,23 +957,61 @@ def progress_bar(ctx, idx, n, lt, dur, a=1.0, y=118, x0=70, x1=None, gap=16):
                 glow(ctx, sx + seg * f, y, 22, GOLD_L, 0.7 * a)
 
 
-def handle(ctx, lt, t0, y=None):
-    """Author signature with side rules — always at the end of a video."""
+def instagram_icon(ctx, cx, cy, s, alpha=1.0):
+    """Instagram glyph: gradient rounded square + white camera outline (s = side)."""
+    if alpha <= 0.003 or s <= 1:
+        return
+    x0, y0 = cx - s / 2, cy - s / 2
+    ctx.save()
+    ctx.push_group()
+    g = cairo.RadialGradient(x0 + s * 0.28, y0 + s * 1.08, 0, x0 + s * 0.28, y0 + s * 1.08, s * 1.4)
+    for off, c in ((0.0, "#fdf497"), (0.07, "#fdf497"), (0.45, "#fd5949"), (0.62, "#d6249f"),
+                   (0.92, "#285aeb")):
+        g.add_color_stop_rgba(off, *hx(c)[:3], 1)
+    round_rect(ctx, x0, y0, s, s, s * 0.27)
+    ctx.set_source(g)
+    ctx.fill()
+    ctx.set_source_rgba(1, 1, 1, 1)
+    ctx.set_line_width(s * 0.075)
+    m = s * 0.2
+    round_rect(ctx, x0 + m, y0 + m, s - 2 * m, s - 2 * m, s * 0.17)
+    ctx.stroke()
+    ctx.arc(cx, cy, s * 0.155, 0, 2 * math.pi)
+    ctx.stroke()
+    ctx.arc(x0 + s * 0.695, y0 + s * 0.305, s * 0.045, 0, 2 * math.pi)
+    ctx.fill()
+    ctx.pop_group_to_source()
+    ctx.paint_with_alpha(min(1.0, alpha))
+    ctx.restore()
+
+
+def handle(ctx, lt, t0, y=None, size=40):
+    """Author signature — Instagram icon + name with side rules, always at the end of a
+    video. Keep y inside the Reels safe zone (not under the caption / buttons)."""
     hp = prog(lt, t0, 1.0)
     if hp <= 0:
         return
     y = y or H - 70
     e = e_out(hp)
+    ic = size * 1.3
+    gap = size * 0.42
+    total = ic + gap + tw(HANDLE, "semi", size, 2)
+    x0 = W / 2 - total / 2
+    cy = y - size * 0.36
     lw = 70 * e
     ctx.set_line_width(2)
     ctx.set_source_rgba(*GOLD[:3], 0.7 * e)
-    hw = tw(HANDLE, "semi", 38, 2) / 2
     for sd in (-1, 1):
-        ctx.move_to(W / 2 + sd * (hw + 24), y - 12)
-        ctx.line_to(W / 2 + sd * (hw + 24 + lw), y - 12)
+        ctx.move_to(W / 2 + sd * (total / 2 + 26), cy)
+        ctx.line_to(W / 2 + sd * (total / 2 + 26 + lw), cy)
     ctx.stroke()
-    text_rise(ctx, HANDLE, "semi", 38, GOLD_L, W / 2, y, hp, align="c", tracking=2,
-              glow=10, glow_a=0.35)
+    ip = prog(lt, t0, 0.6)
+    sc = e_back(ip)
+    if sc > 1e-3:
+        add_glow(ctx, x0 + ic / 2, cy, ic * 1.4, hx("#fd5949"), 0.25 * clamp(ip * 2))
+        instagram_icon(ctx, x0 + ic / 2, cy, ic * sc, clamp(ip * 2))
+    text_rise(ctx, HANDLE, "semi", size, GOLD_L, x0 + ic + gap, y, prog(lt, t0 + 0.12, 1.0),
+              align="l", tracking=2, glow=10, glow_a=0.35, shadow=12, shadow_a=0.5)
 
 
 # --------------------------------------------------------------------------
