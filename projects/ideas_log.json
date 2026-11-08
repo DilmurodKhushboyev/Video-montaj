@@ -1,0 +1,39 @@
+{
+ "videos": [
+  {
+   "name": "hayo_naqadar_gozal",
+   "date": "2026-11-08",
+   "source": "12 kadrli kollaj + hikoya ovozi + nashid (Ali Dawud — Subhan Allah, 145.6–192.1 s)",
+   "duration": 46.5,
+   "mood": "sokin / ma'naviy",
+   "color_story": "kunduzgi yorug' -> masjidning sovuq ko'ki -> chiroq nuri -> zumrad+oltin -> sovuq neon -> quyosh botishi -> indigo+nur -> sepiya -> oq-qora -> rang qaytishi -> oltin osmon",
+   "signatures": [
+    "hook: dolly-out from a direct gaze while a giant word rises from BEHIND the subject's head (GrabCut mask, grown sky)",
+    "zoom into a lantern flame -> white-gold light -> hadith emerges (custom 'lightzoom' transition)",
+    "guillemets « » fly from the centre like opening doors and frame the hadith",
+    "gold/emerald seal stamp slams with shockwave + camera shake",
+    "next scene lives inside the letters of a word; zoom through a letter stroke into it",
+    "picture contracts into a self-drawing eight-pointed star; arabesque ornament blooms on 'adorns'",
+    "rack focus: friends sharp -> focus pulls to the modest one",
+    "cold neon temptation (glitch, social icons) stopped by a raised palm shockwave; grade warms",
+    "staircase typography: words land on glass steps climbing to the summit at sunset",
+    "mihrab-arch window with descending god rays",
+    "triptych builds with the sentence (mind / belly+good deeds / hands), unites in one gold frame, then autofocus brackets ('attention')",
+    "split screen: thinking face drains to grey above, graveyard rises from below with rain + lightning",
+    "medallion: colour blooms back from the chest outward; sentence wraps around him as a halo (arc text)",
+    "finale tilts up with his gaze into the sky; callback title"
+   ],
+   "techniques": ["cutout text-behind-subject", "extend_sky outpaint", "custom transition lightzoom",
+                  "text-mask window + zoom-through-letter", "star8 mask + stroke_partial ornament",
+                  "radial rack focus", "glitch + social_icons", "step plates + zigzag path",
+                  "arch_path mask + god_rays", "triptych strips + brackets",
+                  "split screen + rain + lightning", "arc_text halo + radial colour bloom"],
+   "transitions": {"whip": 2, "dissolve": 2, "lightzoom": 1, "push": 1, "cut(letter zoom)": 1,
+                   "blinds": 1, "glitchcut": 1, "luma": 1, "fade": 1, "iris": 1, "flare": 1},
+   "text_positions": ["behind head (top)", "bottom-left timeline", "top over sky", "centre stack",
+                      "picture-in-text", "top + bottom around star", "above widescreen card",
+                      "top glitch", "diagonal staircase", "above/below arch", "top slot over strips",
+                      "on the split seam", "circular arc", "sky above subject"]
+  }
+ ]
+}
