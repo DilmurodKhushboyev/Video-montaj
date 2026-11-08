@@ -1,11 +1,12 @@
 """
-"Hayo naqadar goʻzal" — Reels uchun oq (fil suyagi) fonli cover, 1080×1920.
+"Hayo naqadar goʻzal" — Reels uchun toza OQ fonli, zamonaviy-luxury cover, 1080×1920.
 
     python3 projects/hayo_cover.py            # -> output/hayo_naqadar_gozal_cover.png/.jpg
 
-Kompozitsiya: oq fon + och oltin naqsh; mehrob ravog'i ichida portret, boshi ravoqdan
-chiqib turadi; ulkan "Hayo" so'zi boshi ORTIDA (video hook'i bilan bir uslub).
-Muhim qismlar markaziy 1080×1440 (profil to'ri 3:4 kesimi) ichida: y 240..1680.
+Uslub: sof oq (#ffffff) fon, ko'p bo'sh joy; oltin varaq (foil) effektli ulkan "Hayo"
+portretning boshi ORTIDA; ingichka qora/oltin chiziqlar; keng harf oralig'idagi yupqa
+sans-serif + yuqori kontrastli serif. Muhim qismlar markaziy 1080×1440 (profil to'ri 3:4
+kesimi) ichida: y 240..1680.
 """
 import math
 import os
@@ -20,98 +21,138 @@ sys.path.insert(0, ROOT)
 import render as R  # noqa: E402
 
 P = R.load_project(os.path.join(HERE, "hayo_naqadar_gozal.py"))
-from render import (W, H, hx, text, tw, add_glow, glow, arch_path, instagram_icon,  # noqa: E402
-                    paint_pic, Pic, HANDLE)
+from render import (W, H, hx, text, tw, sprite, arch_path, paint_pic, round_rect,  # noqa: E402
+                    draw_sprite, HANDLE, BLACK)
 
-IVORY_T, IVORY_B = hx("#fffdf9"), hx("#f3ebdd")
-INK = hx("#1c2238")
-WARM_GRAY = hx("#7a6650")
-GOLD_DK = (hx("#d9b46a"), hx("#94692a"))       # readable gold on white
-GOLD_LINE = hx("#b8924f")
-HAYO_G = (hx("#e7b27c"), hx("#a8642f"))         # warm gold-blush for the big word
+INK = hx("#0e0e10")
+GRAY = hx("#55524d")
+GOLD_HAIR = hx("#b8913f")
+FOIL = ((0.00, "#7a4f16"), (0.18, "#c99a45"), (0.38, "#f7e3a3"), (0.50, "#e2bb65"),
+        (0.66, "#a8742a"), (0.84, "#d9b05c"), (1.00, "#8c5e1f"))
 
-ARCH = (170, 910, 830, 606, 1214)  # x0, x1, spring, apex, bottom
+ARCH = (196, 884, 846, 628, 1236)  # x0, x1, spring, apex, bottom
+
+
+def foil_text(ctx, s, fkey, size, cx, baseline, shadow=True):
+    """Text filled with a metallic gold-foil gradient (sprite used as a mask)."""
+    sp = sprite(s, fkey, size, (1, 1, 1, 1))
+    ox = cx - sp.w / 2
+    x0, y0 = ox - sp.pad, baseline - sp.asc - sp.pad
+    if shadow:
+        sh = sprite(s, fkey, size, BLACK, 0.0, None, 22)
+        draw_sprite(ctx, sh, cx, baseline + 14, 0.16, 1.0, "c")
+    top = baseline - sp.asc * 0.80
+    g = cairo.LinearGradient(cx - 40, top, cx + 40, baseline + sp.desc * 0.5)
+    for off, c in FOIL:
+        g.add_color_stop_rgba(off, *hx(c)[:3], 1)
+    ctx.set_source(g)
+    ctx.mask_surface(sp.surf, x0, y0)
+    # fine specular sweep across the letters
+    g2 = cairo.LinearGradient(ox + sp.w * 0.15, top, ox + sp.w * 0.55, baseline)
+    g2.add_color_stop_rgba(0.0, 1, 1, 1, 0)
+    g2.add_color_stop_rgba(0.5, 1, 0.98, 0.9, 0.35)
+    g2.add_color_stop_rgba(1.0, 1, 1, 1, 0)
+    ctx.save()
+    ctx.set_operator(cairo.OPERATOR_ADD)
+    ctx.set_source(g2)
+    ctx.mask_surface(sp.surf, x0, y0)
+    ctx.restore()
+
+
+def ig_mono(ctx, cx, cy, s, color=INK):
+    """Monochrome Instagram glyph (luxury, single colour)."""
+    x0, y0 = cx - s / 2, cy - s / 2
+    ctx.set_source_rgba(*color[:3], 1)
+    ctx.set_line_width(s * 0.085)
+    round_rect(ctx, x0, y0, s, s, s * 0.28)
+    ctx.stroke()
+    ctx.arc(cx, cy, s * 0.22, 0, 2 * math.pi)
+    ctx.stroke()
+    ctx.arc(x0 + s * 0.76, y0 + s * 0.24, s * 0.055, 0, 2 * math.pi)
+    ctx.fill()
+
+
+def diamond(ctx, x, y, r):
+    ctx.move_to(x, y - r)
+    ctx.line_to(x + r, y)
+    ctx.line_to(x, y + r)
+    ctx.line_to(x - r, y)
+    ctx.close_path()
 
 
 def main():
     surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H)
     ctx = cairo.Context(surf)
-    # background -------------------------------------------------------------
-    g = cairo.LinearGradient(0, 0, 0, H)
-    g.add_color_stop_rgba(0, *IVORY_T)
-    g.add_color_stop_rgba(1, *IVORY_B)
-    ctx.set_source(g)
+    ctx.set_source_rgba(1, 1, 1, 1)
     ctx.paint()
-    lat = P.lattice_surface(color=hx("#c9a86a"), step=150, R_=44)
-    ctx.set_source_surface(lat, -75, -40)
-    ctx.paint_with_alpha(0.10)
-    glow(ctx, 540, 900, 900, hx("#fff4e2"), 0.9)
     x0, x1, sp, ap, bt = ARCH
-    # soft shadow under the arch
-    for k, a in ((22, 0.03), (12, 0.04), (5, 0.05)):
-        ctx.save()
-        ctx.translate(0, 18)
-        arch_path(ctx, x0 - k, x1 + k, sp, ap - k, bt + k)
-        ctx.set_source_rgba(0.35, 0.25, 0.12, a)
-        ctx.fill()
-        ctx.restore()
-    # portrait inside the arch ----------------------------------------------
+    # floating-card shadow: blurred arch silhouette (neutral grey)
+    from PIL import Image, ImageFilter
+    ms = cairo.ImageSurface(cairo.FORMAT_A8, W, H)
+    mc = cairo.Context(ms)
+    arch_path(mc, x0 + 10, x1 - 10, sp + 20, ap + 20, bt)
+    mc.fill()
+    ms.flush()
+    st = ms.get_stride()
+    m = np.ndarray((H, st), np.uint8, ms.get_data())[:, :W].copy()
+    m = np.asarray(Image.fromarray(m).filter(ImageFilter.GaussianBlur(34)))
+    shade = R.Pic(np.zeros((H, W, 3), np.uint8), (m * 0.20).astype(np.uint8))
+    paint_pic(ctx, shade, 1.0, 0, 30)
+    # portrait inside the arch
     pic, cut = P.G["p0x"], P.G["p0cut"]
-    s = 0.66
+    s = 0.62
     eyes = (1110, 480 + P.EXT0)
-    tx, ty = 540 - eyes[0] * s, 826 - eyes[1] * s
+    tx, ty = 540 - eyes[0] * s, 846 - eyes[1] * s
     ctx.save()
     arch_path(ctx, x0, x1, sp, ap, bt)
     ctx.clip()
     paint_pic(ctx, pic, s, tx, ty)
-    R.vgrad(ctx, bt - 240, bt, 0, 0.18, hx("#3a2a14"))
+    R.vgrad(ctx, bt - 200, bt, 0, 0.12, (0, 0, 0))
     ctx.restore()
-    # gold arch outline (double) + finial star
-    for grow, wdt, a in ((10, 3.2, 1.0), (24, 1.3, 0.75)):
-        arch_path(ctx, x0 - grow, x1 + grow, sp, ap - grow, bt + grow)
-        ctx.set_source_rgba(*GOLD_LINE[:3], a)
-        ctx.set_line_width(wdt)
-        ctx.stroke()
-    # giant "Hayo" behind the head -------------------------------------------
-    text(ctx, "Hayo", "serif_it_b", 330, hx("#c98a52"), 540, 606, align="c", grad=HAYO_G,
-         shadow=30, shadow_a=0.22)
-    # the head breaks out of the arch (cutout, only above the spring line)
+    # hairline frames: thin black on the photo edge, gold offset outside
+    arch_path(ctx, x0, x1, sp, ap, bt)
+    ctx.set_source_rgba(*INK[:3], 0.9)
+    ctx.set_line_width(1.4)
+    ctx.stroke()
+    arch_path(ctx, x0 - 18, x1 + 18, sp, ap - 18, bt + 18)
+    ctx.set_source_rgba(*GOLD_HAIR[:3], 1)
+    ctx.set_line_width(1.2)
+    ctx.stroke()
+    # giant gold-foil "Hayo" behind the head
+    foil_text(ctx, "Hayo", "serif_it_b", 336, 540, 640)
+    # head breaks out of the arch
     ctx.save()
     ctx.rectangle(0, 0, W, sp - 60)
     ctx.clip()
     ctx.push_group()
-    paint_pic(ctx, cut, s, tx + 6, ty + 10)
-    sh = ctx.pop_group()
-    ctx.set_source_rgba(0.25, 0.16, 0.06, 0.18)
-    ctx.mask(sh)
+    paint_pic(ctx, cut, s, tx + 5, ty + 9)
+    shd = ctx.pop_group()
+    ctx.set_source_rgba(0, 0, 0, 0.12)
+    ctx.mask(shd)
     paint_pic(ctx, cut, s, tx, ty)
     ctx.restore()
-    # title + subtitle --------------------------------------------------------
-    text(ctx, "naqadar goʻzal", "serif_it", 118, INK, 540, 1352, align="c", shadow=10,
-         shadow_a=0.12)
-    # ornament divider
-    yd = 1406
-    ctx.set_line_width(1.6)
-    ctx.set_source_rgba(*GOLD_LINE[:3], 0.9)
+    # typography below ---------------------------------------------------------
+    text(ctx, "naqadar goʻzal", "xlight", 74, INK, 540, 1368, align="c", tracking=11)
+    yd = 1426
+    ctx.set_source_rgba(*GOLD_HAIR[:3], 1)
+    ctx.set_line_width(1.2)
     for sd in (-1, 1):
-        ctx.move_to(540 + sd * 34, yd)
-        ctx.line_to(540 + sd * 230, yd)
+        ctx.move_to(540 + sd * 22, yd)
+        ctx.line_to(540 + sd * 250, yd)
     ctx.stroke()
-    P.star8_path(ctx, 540, yd, 15)
-    ctx.stroke()
-    ctx.arc(540, yd, 3.2, 0, 2 * math.pi)
+    diamond(ctx, 540, yd, 7)
     ctx.fill()
     hadis = "«Hayo faqat yaxshilik keltiradi»."
-    text(ctx, hadis, "serif_it", 50, WARM_GRAY, 540, 1490, align="c")
+    text(ctx, hadis, "serif_it", 44, GRAY, 540, 1500, align="c")
     # Instagram + name
-    size = 34
-    ic = size * 1.3
-    gap = size * 0.42
-    total = ic + gap + tw(HANDLE, "semi", size, 2)
+    size = 30
+    ic = size * 1.25
+    gap = size * 0.55
+    total = ic + gap + tw(HANDLE, "med", size, 3)
     hx0 = 540 - total / 2
-    yb = 1574
-    instagram_icon(ctx, hx0 + ic / 2, yb - size * 0.36, ic, 1.0)
-    text(ctx, HANDLE, "semi", size, GOLD_LINE, hx0 + ic + gap, yb, tracking=2)
+    yb = 1586
+    ig_mono(ctx, hx0 + ic / 2, yb - size * 0.36, ic)
+    text(ctx, HANDLE, "med", size, INK, hx0 + ic + gap, yb, tracking=3)
     surf.flush()
     out = os.path.join(ROOT, "output", "hayo_naqadar_gozal_cover")
     surf.write_to_png(out + ".png")
