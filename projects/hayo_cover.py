@@ -3,8 +3,8 @@
 
     python3 projects/hayo_cover.py            # -> output/hayo_naqadar_gozal_cover.png/.jpg
 
-Uslub (zamonaviy poster): oq fon + juda nozik naqsh; zumrad ravoq-shakl (yuqorisi
-yarim doira) ichida odam kesmasi, boshi ravoqdan chiqib turadi; ulkan qora "Hayo"
+Uslub (zamonaviy poster): fon faqat sof oq (#ffffff); odam kesmasi yumshoq soya bilan
+ajralib turadi, pastga qarab oqqa singib ketadi; ulkan qora "Hayo"
 (Anton) boshi ORTIDA; tepada Instagram tugmasi va hadis kicker; pastda ikki qiya yorliq
 ("naqadar" qora, "goʻzal" oltin). Muhim qismlar markaziy 3:4 kesim (y 240..1680) ichida.
 """
@@ -122,41 +122,7 @@ def main():
     ctx = cairo.Context(surf)
     ctx.set_source_rgba(1, 1, 1, 1)
     ctx.paint()
-    # very faint geometric lattice on the white
-    lat = P.lattice_surface(color=hx("#dfe7e3"), step=170, R_=50)
-    ctx.set_source_surface(lat, -85, -60)
-    ctx.paint_with_alpha(0.55)
-    # fade the lattice out towards the centre so the type stays clean
-    g = cairo.RadialGradient(540, 760, 120, 540, 760, 760)
-    g.add_color_stop_rgba(0, 1, 1, 1, 0.92)
-    g.add_color_stop_rgba(1, 1, 1, 1, 0.0)
-    ctx.set_source(g)
-    ctx.paint()
-
-    # emerald arch ----------------------------------------------------------
-    ctx.save()
-    arch_shape(ctx)
-    ctx.clip()
-    g = cairo.LinearGradient(0, ARCH_CY - ARCH_R, 0, H)
-    g.add_color_stop_rgba(0, *EMER_1[:3], 1)
-    g.add_color_stop_rgba(1, *EMER_2[:3], 1)
-    ctx.set_source(g)
-    ctx.paint()
-    R.glow(ctx, 540, 980, 620, hx("#3fd19c"), 0.35)
-    lat2 = P.lattice_surface(color=hx("#ffffff"), step=170, R_=50)
-    ctx.set_source_surface(lat2, -85, -60)
-    ctx.paint_with_alpha(0.06)
-    ctx.restore()
-    # orbit ring + gold bead
-    arch_shape(ctx, 24)
-    ctx.set_source_rgba(*EMER[:3], 0.45)
-    ctx.set_line_width(2)
-    ctx.stroke()
-    an = math.radians(-38)
-    bx, by = 540 + (ARCH_R + 24) * math.cos(an), ARCH_CY + (ARCH_R + 24) * math.sin(an)
-    ctx.set_source_rgba(*GOLD_2[:3], 1)
-    ctx.arc(bx, by, 9, 0, 2 * math.pi)
-    ctx.fill()
+    # background: pure white only
 
     # giant "Hayo" (behind the head) ------------------------------------------
     sh = sprite("Hayo", "anton", HAYO_SIZE, BLACK, 0.0, None, 18)
@@ -172,9 +138,6 @@ def main():
 
     def draw_cut(c):
         c.save()
-        arch_shape(c)                       # body stays inside the arch,
-        c.rectangle(0, 0, W, 900)           # the head breaks out above it
-        c.clip()
         c.push_group()
         paint_pic(c, cut, S, tx, ty)
         g2 = cairo.LinearGradient(0, fade0, 0, bottom)
@@ -189,7 +152,7 @@ def main():
         c.restore()
 
     al = layer_alpha(draw_cut)
-    paint_pic(ctx, blurred_alpha_pic(al, 22, 0.42), 1.0, 0, 18)
+    paint_pic(ctx, blurred_alpha_pic(al, 26, 0.30), 1.0, 0, 20)
     draw_cut(ctx)
 
     # top: Instagram pill + hadith kicker ----------------------------------
