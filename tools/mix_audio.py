@@ -3,14 +3,17 @@
 mix_audio.py — ovoz yozuvi (azvuchka) + fon musiqasini Reels uchun aralashtirish.
 
     python3 tools/mix_audio.py VOICE MUSIC OUT.m4a --dur 47 --music-start 37.01 \
-        [--voice-delay 0.2] [--voice-lufs -15] [--music-lufs -20] [--duck 7]
-        [--fade-in 0.3] [--fade-out 2.2]
+        [--voice-delay 0.2] [--voice-lufs -14] [--music-lufs -22] [--duck 9]
+        [--music-eq FILTER|none] [--fade-in 0.3] [--fade-out 2.2]
 
 * Ovoz past bo'lsa — maqsadli balandlikka chiziqli ko'tariladi (tembr o'zgarmaydi),
   cho'qqilar limiter bilan ushlanadi. Ovoz maqsadga yaqin bo'lsa (±1.5 LU) — tegilmaydi.
 * Musiqa kerakli joydan kesiladi; video uzunroq bo'lsa — musiqa sikl bo'lib
   qayta ulanadi (crossfade bilan).
 * Ovoz yangraganda musiqa silliq pasayadi (ducking), pauzalarda qaytadi.
+* Musiqada nutq chastotalari (0.9 va 2.5 kHz) biroz kesiladi — ovozga "joy" ochiladi.
+* Natijada nutq paytida ovoz va musiqa farqi (momentary LUFS) chop etiladi:
+  Reels uchun mediana >= ~15 dB, 10-persentil >= ~9 dB bo'lsin.
 * Aralashtirish numpy'da, namunaga aniq — vaqt belgilarida teshik bo'lmaydi.
 """
 import argparse
@@ -21,6 +24,7 @@ import subprocess
 import numpy as np
 
 SR = 48000
+MUSIC_EQ = "equalizer=f=2500:t=q:w=1.0:g=-5,equalizer=f=900:t=q:w=1.2:g=-3"
 
 
 def lufs(path, filt=None):
@@ -57,6 +61,27 @@ def smooth_env(x, att, rel):
     return np.repeat(out, blk)[:len(x)]
 
 
+def momentary(x):
+    """Momentary loudness (400 ms, 10 Hz) of a stereo float array via ffmpeg ebur128."""
+    p = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-v", "verbose", "-f", "f32le", "-ar",
+                        str(SR), "-ac", str(x.shape[1]), "-i", "-", "-af", "ebur128=framelog=verbose",
+                        "-f", "null", "-"], input=np.ascontiguousarray(x, np.float32).tobytes(),
+                       capture_output=True)
+    return np.array([float(v) for v in re.findall(rb"M:\s*(-?[\d.]+)", p.stderr)])
+
+
+def report_balance(voice, music):
+    mv, mm = momentary(voice), momentary(music)
+    n = min(len(mv), len(mm))
+    mv, mm = mv[:n], mm[:n]
+    sp = mv > -35
+    if sp.any():
+        d = mv[sp] - mm[sp]
+        print(f"nutq paytida: ovoz {np.median(mv[sp]):.1f}, musiqa {np.median(mm[sp]):.1f} LUFS(M) -> "
+              f"farq mediana {np.median(d):.1f} dB, 10-persentil {np.percentile(d, 10):.1f} dB; "
+              f"pauzalarda musiqa {np.median(mm[~sp]):.1f}")
+
+
 def write_wav(path, x):
     p = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "f32le", "-ar", str(SR), "-ac",
                           str(x.shape[1]), "-i", "-", path], stdin=subprocess.PIPE)
@@ -73,9 +98,11 @@ def main():
     ap.add_argument("--dur", type=float, required=True)
     ap.add_argument("--music-start", type=float, default=0.0)
     ap.add_argument("--voice-delay", type=float, default=0.0)
-    ap.add_argument("--voice-lufs", type=float, default=-15.0)
-    ap.add_argument("--music-lufs", type=float, default=-20.0)
-    ap.add_argument("--duck", type=float, default=7.0, help="ovoz paytida musiqa pasayishi (dB)")
+    ap.add_argument("--voice-lufs", type=float, default=-14.0)
+    ap.add_argument("--music-lufs", type=float, default=-22.0)
+    ap.add_argument("--duck", type=float, default=9.0, help="ovoz paytida musiqa pasayishi (dB)")
+    ap.add_argument("--music-eq", default=MUSIC_EQ,
+                    help="musiqaga ffmpeg EQ filtri (nutq diapazonini bo'shatish); 'none' — o'chirish")
     ap.add_argument("--fade-in", type=float, default=0.3)
     ap.add_argument("--fade-out", type=float, default=2.2)
     a = ap.parse_args()
@@ -98,7 +125,8 @@ def main():
     voice[d0:d0 + k] = vo[:k]
 
     # ---- music section (looped if too short)
-    mu = decode(a.music, None, 2)
+    meq = None if a.music_eq in ("", "none") else a.music_eq
+    mu = decode(a.music, meq, 2)
     s0 = int(round(a.music_start * SR))
     sec = mu[s0:]
     if len(sec) < N:
@@ -109,7 +137,7 @@ def main():
             head = mu[:xf] * ramp
             sec = np.concatenate([sec[:-xf], sec[-xf:] * (1 - ramp) + head, mu[xf:]])
     music = sec[:N].copy()
-    m = lufs(a.music, f"atrim=start={a.music_start}:duration={a.dur}")
+    m = lufs(a.music, f"atrim=start={a.music_start}:duration={a.dur}" + (f",{meq}" if meq else ""))
     mgain = a.music_lufs - float(m["input_i"])
     print(f"musiqa bo'lagi: {float(m['input_i']):.1f} LUFS -> {a.music_lufs} LUFS ({mgain:+.1f} dB)")
 
@@ -124,6 +152,7 @@ def main():
     fade = np.clip(t / max(a.fade_in, 1e-3), 0, 1) * np.clip((a.dur - t) / a.fade_out, 0, 1)
     music *= (10 ** (gdb / 20) * fade ** 1.5)[:, None].astype(np.float32)
 
+    report_balance(voice, music)
     mix = voice + music
     pk = np.abs(mix).max()
     lim = 0.89
