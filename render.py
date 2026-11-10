@@ -78,6 +78,9 @@ FONTS = {
     "serif": ("PlayfairDisplay.ttf", 700),
     "serif_it": ("PlayfairDisplay-Italic.ttf", 500),
     "serif_it_b": ("PlayfairDisplay-Italic.ttf", 700),
+    "anton": ("Anton-Regular.ttf", None),          # tall condensed display (posters, covers)
+    "oswald": ("Oswald[wght].ttf", 700),
+    "archivo": ("ArchivoBlack-Regular.ttf", None),  # wide heavy grotesque (no U+02BB!)
 }
 
 
