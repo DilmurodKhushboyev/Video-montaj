@@ -1,0 +1,4 @@
+__pycache__/
+previews/
+models/
+assets/audio/*_mix.wav

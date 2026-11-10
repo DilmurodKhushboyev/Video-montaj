@@ -1,0 +1,36 @@
+{
+ "videos": [
+  {
+   "name": "zal_tana",
+   "date": "2026-11-10",
+   "theme": "Zal / tana / oila — pulga sotib olib bo'lmaydigan tana",
+   "images": "12 kadrli anime kollaj (ajratildi, waifu2x 4x)",
+   "audio": "azvuchka +11.7 dB (-15 LUFS) + Manasha Over (Slowed) 37.01 s dan, ducking",
+   "signature": [
+    "pul tanaga tegib portlaydi",
+    "do'kon eshigi yopiladi",
+    "tanishlar tarmog'i uziladi",
+    "oltin chiziq tanani o'zgartiradi",
+    "matn osmonda bosh ortida",
+    "energiya qalqoni + chaqmoq",
+    "so'zlar minorasi ko'tariladi",
+    "yosh hisoblagichi + vaqt sakrashi",
+    "silueta atrofida uy chiziladi",
+    "muzqaymoqdek eriydigan matn"
+   ],
+   "techniques": [
+    "full-bleed", "split-screen (gorizontal)", "karta + blur fon", "sintetik osmon kengaytmasi",
+    "band + qora maydon", "punch-in zarbada", "pull-out", "sho'ng'ish (zoom_between)", "panorama",
+    "kalit-kadrli kuzatuv (_cam_keys)", "match-cut yuz", "rack focus", "whip-pan",
+    "bills (pul yomg'iri)", "network (tarmoq uziladi)", "hex_shield", "lightning", "god_rays", "flare",
+    "light_leak", "shockwave", "sparks", "stars", "steam", "dust", "bokeh",
+    "sovuq -> iliq", "ichkari iliq / tashqari sovuq", "quyosh botishi",
+    "words_in blur", "text_rise", "slam", "strike", "glitch_text", "counter", "narx yorlig'i",
+    "outline -> solid (chiziq o'tganda)", "matn bosh ortida (sky_cutout)",
+    "futbolkaga bosilgan matn (MULTIPLY)", "so'z minorasi ko'tariladi", "eriydigan matn (melt_text)",
+    "whip", "shutter (do'kon eshigi)", "push", "glitchcut", "zoom", "flare", "cut zarbada", "burn",
+    "blinds", "timewarp", "dissolve", "luma"
+   ]
+  }
+ ]
+}
