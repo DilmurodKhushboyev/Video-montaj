@@ -78,6 +78,7 @@ FONTS = {
     "serif": ("PlayfairDisplay.ttf", 700),
     "serif_it": ("PlayfairDisplay-Italic.ttf", 500),
     "serif_it_b": ("PlayfairDisplay-Italic.ttf", 700),
+    "anton": ("Anton-Regular.ttf", None),  # kondensat display (muqova, poster)
 }
 
 
