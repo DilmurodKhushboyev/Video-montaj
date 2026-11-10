@@ -1,8 +1,9 @@
 """
 zal_tana — "Chiroyli va mushakdor tanani pulga sotib ololmaysiz..."
 
-12 ta rasm (kollajdan ajratilgan, 4x waifu2x) + ovoz yozuvi (+11.7 dB) + fon musiqasi
+12 ta rasm (kollajdan ajratilgan, 4x waifu2x) + ovoz yozuvi (+12.7 dB) + fon musiqasi
 (Manasha Over (Slowed), 37.01 s dan; "Eng muhimi" so'zi musiqa zarbasiga tushadi).
+Miks: ovoz -14 LUFS, musiqa -19 LUFS, ducking 8.5 dB, nutq diapazoni EQ (tools/mix_audio.py).
 Matn — so'zma-so'z ovozga bog'langan (tools/align_words.py -> zal_tana_words.json).
 
 Rang hikoyasi: sovuq bozor (po'lat-ko'k) -> zal (qahrabo) -> o'zgarish (oltin) ->

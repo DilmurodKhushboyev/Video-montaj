@@ -3,7 +3,7 @@
 mix_audio.py — ovoz yozuvi (azvuchka) + fon musiqasini Reels uchun aralashtirish.
 
     python3 tools/mix_audio.py VOICE MUSIC OUT.m4a --dur 47 --music-start 37.01 \
-        [--voice-delay 0.2] [--voice-lufs -14] [--music-lufs -22] [--duck 9]
+        [--voice-delay 0.2] [--voice-lufs -14] [--music-lufs -19] [--duck 8.5]
         [--music-eq FILTER|none] [--fade-in 0.3] [--fade-out 2.2]
 
 * Ovoz past bo'lsa — maqsadli balandlikka chiziqli ko'tariladi (tembr o'zgarmaydi),
@@ -13,7 +13,7 @@ mix_audio.py — ovoz yozuvi (azvuchka) + fon musiqasini Reels uchun aralashtiri
 * Ovoz yangraganda musiqa silliq pasayadi (ducking), pauzalarda qaytadi.
 * Musiqada nutq chastotalari (0.9 va 2.5 kHz) biroz kesiladi — ovozga "joy" ochiladi.
 * Natijada nutq paytida ovoz va musiqa farqi (momentary LUFS) chop etiladi:
-  Reels uchun mediana >= ~15 dB, 10-persentil >= ~9 dB bo'lsin.
+  Reels uchun mediana ~12-13 dB (8 dB — musiqa bosadi, 16 dB — musiqa juda past).
 * Aralashtirish numpy'da, namunaga aniq — vaqt belgilarida teshik bo'lmaydi.
 """
 import argparse
@@ -99,8 +99,8 @@ def main():
     ap.add_argument("--music-start", type=float, default=0.0)
     ap.add_argument("--voice-delay", type=float, default=0.0)
     ap.add_argument("--voice-lufs", type=float, default=-14.0)
-    ap.add_argument("--music-lufs", type=float, default=-22.0)
-    ap.add_argument("--duck", type=float, default=9.0, help="ovoz paytida musiqa pasayishi (dB)")
+    ap.add_argument("--music-lufs", type=float, default=-19.0)
+    ap.add_argument("--duck", type=float, default=8.5, help="ovoz paytida musiqa pasayishi (dB)")
     ap.add_argument("--music-eq", default=MUSIC_EQ,
                     help="musiqaga ffmpeg EQ filtri (nutq diapazonini bo'shatish); 'none' — o'chirish")
     ap.add_argument("--fade-in", type=float, default=0.3)
